@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Executar Comando - RJARM17-RMP01</title>
+<style>
+  body {
+    background-color: #F0F0F0;
+    color: #000000;
+    font-family: Verdana, Arial, sans-serif;
+    font-size: 11px;
+    margin: 0;
+    padding: 0;
+  }
+  .wrap { width: 90%; margin: 10px auto; }
+  .titulo {
+    background-color: #145096;
+    color: #FFFFFF;
+    font-weight: bold;
+    padding: 6px 10px;
+    border: 1px solid #000000;
+    font-size: 12px;
+  }
+  .painel {
+    background-color: #FFFFFF;
+    border: 1px solid #000000;
+    border-top: none;
+    padding: 12px;
+  }
+  .linha_info { margin-bottom: 8px; }
+  .titinput { font-weight: bold; }
+  #table_comando {
+    font-family: monospace;
+    font-size: 11px;
+    background-color: #408040;
+    color: #FFFFFF;
+    font-weight: bold;
+    padding: 4px 8px;
+    display: inline-block;
+    border: 1px solid #000000;
+  }
+  .barra_bot {
+    text-align: right;
+    margin-top: 8px;
+  }
+  .barra_bot button {
+    background-color: #408040;
+    color: #FFFFFF;
+    border: 1px solid #000000;
+    padding: 4px 12px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  #div_resultado {
+    border: 1px solid #000000;
+    overflow: auto;
+    width: 100%;
+    height: 450px;
+    background-color: #606060;
+    color: #FFFFFF;
+    font-family: monospace;
+    font-size: 11px;
+    padding-left: 5px;
+    box-sizing: border-box;
+    margin-top: 10px;
+    white-space: pre;
+  }
+  #divProgress {
+    visibility: hidden;
+    position: absolute;
+    padding: 5px;
+    border: 1px solid #E00000;
+    background-color: #FFFFCC;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="titulo">Executar Comando Pr&eacute;-definido</div>
+
+  <div class="painel">
+    <div class="linha_info"><span class="titinput">Eqpto:</span> RJARM17-RMP01 &nbsp;&nbsp; <span class="titinput">Tipo:</span> ROTEADOR HUAWEI ATN910D-A</div>
+    <div class="linha_info">
+      <span class="titinput">Comando a Enviar:</span>
+      <span id="table_comando">&nbsp;</span>
+    </div>
+    <div class="barra_bot">
+      <button type="button" id="botao_enviar" onClick="submit_enviar();">Enviar o Comando</button>
+      <button type="button" id="botao_limpar" onClick="limpar();">Limpar Tela</button>
+    </div>
+  </div>
+
+  <div id="div_resultado"></div>
+
+</div>
+
+<div id="divProgress"><img src="include/wait.gif" border="1" width="173" height="15" onerror="this.style.display='none'"> Aguarde, consultando o servidor...</div>
+
+<iframe id="ifrJsExterno" name="ifrJsExterno" frameborder="0" width="0" height="0" src="javascript:''"></iframe>
+
+<!-- form mantido para compatibilidade com callbacks que escrevam em campos -->
+<form style="display:none" name="formTctg">
+  <input name='eqpto'      type='hidden' id='eqpto'      value="RJARM17-RMP01">
+  <input name='tipo_eqpto' type='hidden' id='tipo_eqpto' value="ROTEADOR HUAWEI ATN910D-A">
+  <input name='acao'       type='hidden' id='acao'       value="">
+  <input name='id_rede'    type='hidden' id='id_rede'    value="33">
+  <input name='ip_eqpto'   type='hidden' id='ip_eqpto'   value="10.205.40.1">
+  <input name='comando'    type='hidden' id='comando'    value="">
+</form>
+
+<script language="javascript">
+
+// ====== CONFIGURAÇÃO DO COMANDO ======
+// O comando real inclui o prefixo de obfuscação de 6 caracteres "ISjoyv"
+// (o sistema original mostra na tela usando comando.substring(6)).
+// Para trocar de comando/interface, edite somente a linha abaixo.
+var COMANDO_COMPLETO = "ISjoyvdisplay interface GIGABITETHERNET0/2/22";
+
+// Args fixos (hardcoded no sistema original)
+var ARG0 = "T%60aYPa%5C%40F%3Ca%5C_%3F%40";
+var ARG1 = "V%5D%3E%3D%3B%3F%3DB%3BA%3D%3B%3E";
+var ARG2 = "odmjo%60%5C_jm%3Bcp%5Cr%60d%3B%5CoiTLK_H%5C";
+var ID_REDE = "33";
+
+// Caminho base do proxy no servidor GRB (relativo, para rodar no mesmo domínio)
+var PROXY = "executar_comandos_ssh_proxy.php";
+// =====================================
+
+// Exibe o comando "limpo" (sem os 6 chars de prefixo), igual ao original
+document.getElementById('table_comando').innerHTML =
+    "&nbsp;" + COMANDO_COMPLETO.substring(6) + "&nbsp;";
+document.getElementById('comando').value = COMANDO_COMPLETO;
+
+function submit_enviar()
+{
+  var comando = document.getElementById('comando').value;
+  var d = new Date();
+
+  var url = PROXY + '?';
+  url += "&arg0=" + ARG0;
+  url += "&arg1=" + ARG1;
+  url += "&arg2=" + ARG2;
+  url += "&id_rede=" + ID_REDE;
+  url += "&comando=" + escape(comando);
+  url += "&tcos=" + d.getTime();
+
+  document.getElementById('ifrJsExterno').src = url;
+  document.body.style.cursor = 'wait';
+  document.getElementById("divProgress").style.visibility = "visible";
+  document.getElementById('botao_enviar').disabled = true;
+  document.getElementById('botao_enviar').style.color = "#808080";
+}
+
+function limpar()
+{
+  document.getElementById("div_resultado").innerHTML = "";
+}
+
+// Dispara automaticamente assim que a página carrega
+window.onload = function() {
+  submit_enviar();
+};
+
+</script>
+
+</body>
+</html>
